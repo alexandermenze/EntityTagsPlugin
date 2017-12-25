@@ -3,10 +3,11 @@ package de.dca.entitytags.api
 import org.bukkit.entity.Player
 import org.bukkit.util.Vector
 
-
-val ZERO_OFFSET = Vector(0,0 ,0)
-
 abstract class EntityTag(text: String = "") {
+
+    companion object {
+        val ZERO_OFFSET = Vector(0, 0, 0)
+    }
 
     protected var tagText : String = text
 
