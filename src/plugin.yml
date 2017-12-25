@@ -1,0 +1,5 @@
+name: EntityTags
+version: 1.0
+author: DudeCalledAlex
+description: EntityTags Module
+main: de.dca.entitytags.EntityTagsPlugin
