@@ -8,7 +8,7 @@ object EntityIdRepository {
     private const val ENTITY_COUNT_FIELD_NAME = "entityCount"
 
     private val entityCountField : Field
-    private val idMap : Map<Int, Boolean>
+    private val idMap : LinkedHashMap<Int, Boolean>
 
     init {
         idMap = LinkedHashMap()
@@ -24,6 +24,24 @@ object EntityIdRepository {
         val id = entityCountField.getInt(null)
         entityCountField.setInt(null, id + 1)
         return id
+    }
+
+    fun reserve() : Int {
+        for(id in idMap){
+            if (id.value)
+                continue
+
+            id.setValue(true)
+            return id.key
+        }
+        val id = reserveEntityId()
+        idMap.put(id, true)
+        return id
+    }
+
+    fun free(id: Int) {
+        if (idMap.containsKey(id))
+            idMap[id] = false
     }
 
 }
