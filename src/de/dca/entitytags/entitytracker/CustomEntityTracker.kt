@@ -10,7 +10,7 @@ import java.lang.reflect.Field
 import java.util.*
 
 class CustomEntityTracker
-    : EntityTracker{
+    : EntityTracker {
 
     private lateinit var superTrackerSet: Set<EntityTrackerEntry>
     private lateinit var superTrackerMap: IntHashMap<EntityTrackerEntry>
