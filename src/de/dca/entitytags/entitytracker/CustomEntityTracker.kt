@@ -35,9 +35,6 @@ class CustomEntityTracker
 
     constructor(worldServer: WorldServer)
         : super(worldServer)
-    {
-        checkTrackerEntries()
-    }
 
     constructor(world: World)
         : this((world as CraftWorld).handle)
