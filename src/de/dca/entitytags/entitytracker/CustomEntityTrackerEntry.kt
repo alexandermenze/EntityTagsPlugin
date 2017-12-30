@@ -7,6 +7,20 @@ import org.bukkit.entity.LivingEntity
 class CustomEntityTrackerEntry
     : EntityTrackerEntry {
 
+    companion object {
+
+        fun copyFrom(oldEntry: EntityTrackerEntry) : CustomEntityTrackerEntry {
+            val newEntry = CustomEntityTrackerEntry(oldEntry.b())
+            try {
+                ReflectionUtil.copyObjectInto(oldEntry, newEntry, EntityTrackerEntry::class.java)
+            }catch (ex: Exception){
+                throw RuntimeException("Could not create custom entity tracker entry!", ex)
+            }
+            return newEntry
+        }
+
+    }
+
     constructor(entity: Entity, i: Int, j: Int, k: Int, flag: Boolean)
         : super(entity, i, j, k, flag)
 
@@ -28,15 +42,5 @@ class CustomEntityTrackerEntry
 
             //Todo: Check entitytags
         }
-    }
-
-    fun copyFrom(oldEntry: EntityTrackerEntry) : CustomEntityTrackerEntry {
-        val newEntry = CustomEntityTrackerEntry(oldEntry.b())
-        try {
-            ReflectionUtil.copyObjectInto(oldEntry, newEntry, EntityTrackerEntry::class.java)
-        }catch (ex: Exception){
-            throw RuntimeException("Could not create custom entity tracker entry!", ex)
-        }
-        return newEntry
     }
 }

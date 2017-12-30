@@ -1,9 +1,6 @@
 package de.dca.entitytags.entitytracker
 
-import net.minecraft.server.v1_12_R1.EntityTracker
-import net.minecraft.server.v1_12_R1.EntityTrackerEntry
-import net.minecraft.server.v1_12_R1.IntHashMap
-import net.minecraft.server.v1_12_R1.WorldServer
+import net.minecraft.server.v1_12_R1.*
 import org.bukkit.World
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld
 import java.lang.reflect.Field
@@ -12,7 +9,7 @@ import java.util.*
 class CustomEntityTracker
     : EntityTracker {
 
-    private lateinit var superTrackerSet: Set<EntityTrackerEntry>
+    private lateinit var superTrackerSet: MutableSet<EntityTrackerEntry>
     private lateinit var superTrackerMap: IntHashMap<EntityTrackerEntry>
 
     private val tmpTrackerSet: HashSet<EntityTrackerEntry> = HashSet()
@@ -47,7 +44,7 @@ class CustomEntityTracker
 
     private fun loadTrackersFromSuper(){
         try {
-            superTrackerSet = trackerSetField.get(this) as Set<EntityTrackerEntry>
+            superTrackerSet = trackerSetField.get(this) as MutableSet<EntityTrackerEntry>
             superTrackerMap = this.trackedEntities
         }catch (ex: Exception){
             throw RuntimeException(ex)
@@ -58,13 +55,26 @@ class CustomEntityTracker
         loadTrackersFromSuper()
         tmpTrackerSet.clear()
 
-        val iter: Iterator<EntityTrackerEntry> = superTrackerSet.iterator()
+        val iter: MutableIterator<EntityTrackerEntry> = superTrackerSet.iterator()
         while (iter.hasNext()){
             val it = iter.next()
             if (it is CustomEntityTrackerEntry)
                 continue
 
-
+            iter.remove()
+            tmpTrackerSet.add(CustomEntityTrackerEntry.copyFrom(it))
         }
+
+        if (tmpTrackerSet.size > 0){
+            superTrackerSet.addAll(tmpTrackerSet)
+            for (entry in tmpTrackerSet){
+                superTrackerMap.a(entry.b().id, entry)
+            }
+        }
+    }
+
+    override fun addEntity(entity: Entity?, i: Int, j: Int, flag: Boolean) {
+        super.addEntity(entity, i, j, flag)
+        checkTrackerEntries()
     }
 }
