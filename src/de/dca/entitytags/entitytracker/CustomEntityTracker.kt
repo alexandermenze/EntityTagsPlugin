@@ -48,7 +48,7 @@ class CustomEntityTracker
         }
     }
 
-    private fun checkTrackerEntries(){
+    fun checkTrackerEntries(){
         loadTrackersFromSuper()
         tmpTrackerSet.clear()
 
