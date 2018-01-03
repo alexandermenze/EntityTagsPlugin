@@ -8,9 +8,14 @@ import java.lang.reflect.Field
 private object DataWatcherHelper {
 
     private val ENTITY_FIELD: Field
+    private val WATCHER_ITEM_MAP_FIELD: Field
 
     init {
         ENTITY_FIELD = findEntityField()
+        ENTITY_FIELD.isAccessible = true
+
+        WATCHER_ITEM_MAP_FIELD = findWatcherItemMapField()
+        WATCHER_ITEM_MAP_FIELD.isAccessible = true
     }
 
     private fun findEntityField() : Field {
@@ -21,21 +26,33 @@ private object DataWatcherHelper {
         }
     }
 
+    private fun findWatcherItemMapField() : Field {
+        try{
+            return DataWatcher::class.java.getDeclaredField("d")
+        }catch (ex: IllegalAccessException){
+            throw RuntimeException(ex)
+        }
+    }
+
     fun getEntity(watcher: DataWatcher) : Entity {
         return ENTITY_FIELD.get(watcher) as Entity
+    }
+
+    fun getItemMap(watcher: DataWatcher) : MutableMap<Int, DataWatcher.Item<*>> {
+        return WATCHER_ITEM_MAP_FIELD.get(watcher) as MutableMap<Int, DataWatcher.Item<*>>
+    }
+
+    fun setDataWatcherItem(watcher: DataWatcher, item: DataWatcher.Item<*>){
+        getItemMap(watcher)[item.a().a()] = item
     }
 
     fun cloneDataWatcher(source: DataWatcher) : DataWatcher {
         val clone = DataWatcher(source.getEntity())
         val watcherObjects = source.c() ?: return clone
         for (value in watcherObjects){
-            insert(clone, value as DataWatcher.Item<Any>)
+            setDataWatcherItem(clone, value.d())
         }
         return clone
-    }
-
-    private fun <T> insert(watcher: DataWatcher, item: DataWatcher.Item<T>){
-        watcher[item.a()] = item.b()
     }
 
 }
