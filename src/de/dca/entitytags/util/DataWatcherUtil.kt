@@ -8,8 +8,8 @@ import java.lang.reflect.Field
 
 object DataWatcherUtil {
 
-    val entityDataWatcherMap: Map<EntityType, DataWatcherFactory>
-
+    /*val entityDataW
+    atcherMap: Map<EntityType, DataWatcherFactory>
     fun getEntityDataWatcher(entityType: EntityType) : DataWatcher {
 
     }
@@ -25,5 +25,5 @@ object DataWatcherUtil {
         fun createWatcherFromTemplate() : DataWatcher {
             val copy = DataWatcher(template.getEntity())
         }
-    }
+    }*/
 }
