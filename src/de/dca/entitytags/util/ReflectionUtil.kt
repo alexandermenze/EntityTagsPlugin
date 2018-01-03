@@ -7,7 +7,7 @@ import java.lang.reflect.Modifier
 
 object ReflectionUtil {
 
-    private val unsafeInstance : Unsafe
+    val unsafeInstance : Unsafe
     private val fieldModifiersField : Field
 
     init {
@@ -41,8 +41,8 @@ object ReflectionUtil {
         field.set(obj, value)
     }
 
-    fun <T> allocateObject(clazz: Class<T>) : T {
-        return (unsafeInstance.allocateInstance(clazz) as T)
+    inline fun <reified T> allocateObject() : T {
+        return (unsafeInstance.allocateInstance(T::class.java) as T)
     }
 
     fun <T : Any> copyObject(src: T) : T {
