@@ -42,15 +42,13 @@ private object DataWatcherHelper {
         return WATCHER_ITEM_MAP_FIELD.get(watcher) as MutableMap<Int, DataWatcher.Item<*>>
     }
 
-    fun setDataWatcherItem(watcher: DataWatcher, item: DataWatcher.Item<*>){
-        getItemMap(watcher)[item.a().a()] = item
-    }
-
     fun cloneDataWatcher(source: DataWatcher) : DataWatcher {
         val clone = DataWatcher(source.getEntity())
         val watcherObjects = source.c() ?: return clone
-        for (value in watcherObjects){
-            setDataWatcherItem(clone, value.d())
+
+        val watcherItemMap = getItemMap(clone)
+        for (item in watcherObjects){
+            watcherItemMap[item.a().a()] = item
         }
         return clone
     }
