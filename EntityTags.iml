@@ -9,5 +9,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="KotlinJavaRuntime" level="project" />
     <orderEntry type="library" name="spigot-1.12.2-R0.1-SNAPSHOT-b1468" level="project" />
+    <orderEntry type="library" name="spigot-1.12.2-R0.1-SNAPSHOT-b1460" level="project" />
   </component>
 </module>

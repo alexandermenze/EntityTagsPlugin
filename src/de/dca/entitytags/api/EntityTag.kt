@@ -3,13 +3,17 @@ package de.dca.entitytags.api
 import org.bukkit.entity.Player
 import org.bukkit.util.Vector
 
-abstract class EntityTag(text: String = "") {
+abstract class EntityTag {
 
     companion object {
         val ZERO_OFFSET = Vector(0, 0, 0)
     }
 
-    protected var tagText : String = text
+    protected var tagText : String
+
+    constructor(text: String = ""){
+        this.tagText = text
+    }
 
     fun update(){
         EntityTags.internalUpdateTag(this)
