@@ -1,5 +1,6 @@
 package de.dca.entitytags.util
 
+import de.dca.entitytags.extensions.deepClone
 import net.minecraft.server.v1_12_R1.DataWatcher
 import net.minecraft.server.v1_12_R1.Entity
 import net.minecraft.server.v1_12_R1.World
@@ -14,11 +15,11 @@ object DataWatcherUtil {
     inline fun <reified T : Entity> getDataWatcher() : DataWatcher {
         val lazyWatcher = LazyDataWatchers[T::class.java]
         if (lazyWatcher != null)
-            return lazyWatcher
+            return lazyWatcher.deepClone()
 
         val dataWatcher = createDataWatcher<T>()
         LazyDataWatchers[T::class.java] = dataWatcher
-        return dataWatcher
+        return dataWatcher.deepClone()
     }
 
     inline fun <reified T : Entity> createDataWatcher() : DataWatcher {
