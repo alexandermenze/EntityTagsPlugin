@@ -27,6 +27,7 @@ object DataWatcherUtil {
         val constructor = T::class.java.getConstructor(worldClass)
                 ?: throw RuntimeException("No single parameter constructor found for type '${T::class.java.name}' with argument '${worldClass.name}'")
 
+        constructor.isAccessible = true
         val entityObject: T = constructor.newInstance(null)
         return entityObject.dataWatcher
     }
