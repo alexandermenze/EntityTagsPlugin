@@ -7,15 +7,16 @@ import net.minecraft.server.v1_12_R1.World
 
 object DataWatcherUtil {
 
-    private val _watcherMap: MutableMap<Class<out Entity>, DataWatcher> = HashMap()
+    private val watcherMap: MutableMap<Class<out Entity>, DataWatcher> = HashMap()
 
     val LazyDataWatchers: MutableMap<Class<out Entity>, DataWatcher>
-        get() = _watcherMap
+        get() = watcherMap
 
     inline fun <reified T : Entity> getDataWatcher() : DataWatcher {
         val lazyWatcher = LazyDataWatchers[T::class.java]
         if (lazyWatcher != null)
             return lazyWatcher.deepClone()
+
 
         val dataWatcher = createDataWatcher<T>()
         LazyDataWatchers[T::class.java] = dataWatcher
