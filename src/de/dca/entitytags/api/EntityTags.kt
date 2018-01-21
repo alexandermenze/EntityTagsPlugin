@@ -1,5 +1,6 @@
 package de.dca.entitytags.api
 
+import de.dca.entitytags.extensions.NetworkWrapper
 import de.dca.entitytags.util.EntityIdRepository
 import net.minecraft.server.v1_12_R1.DataWatcher
 import net.minecraft.server.v1_12_R1.PacketPlayOutEntityDestroy
@@ -54,6 +55,9 @@ class EntityTags {
     private val tmpPlayerMap: HashMap<Player, Int> = HashMap()
     private val tmpDataWatcher: DataWatcher = DataWatcher(null)
 
+    val Size: Int
+        get() = entityTags.size
+
     private constructor(entity: LivingEntity){
         this._entity = entity
     }
@@ -98,26 +102,18 @@ class EntityTags {
 
     fun remove(tag: EntityTag): Boolean {
         if (entityTags.containsKey(tag)) {
-            val entityId = entityTags.remove(tag)
+            val entityId = entityTags.remove(tag) ?: return false
             val players = entityTagPlayers.remove(tag) ?: return false
 
             for (p in players) {
-                try {
-                    (p as CraftPlayer).handle.playerConnection.sendPacket(PacketPlayOutEntityDestroy(entityId))
-                } catch (ex: Exception) {
-                    ex.printStackTrace() // Ignore packet errors
-                }
-
+                p.NetworkWrapper.sendDestroyEntity(entityId)
             }
+
             EntityIdRepository.free(entityId)
             tag.onDetach(this)
             return true
         }
         return false
-    }
-
-    fun size(): Int {
-        return entityTags.size
     }
 
     fun update(){
