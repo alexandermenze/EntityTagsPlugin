@@ -4,5 +4,5 @@ import net.minecraft.server.v1_12_R1.PlayerConnection
 import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer
 import org.bukkit.entity.Player
 
-val Player.NetworkWrapper : PlayerConnection
+val Player.PlayerConnection : PlayerConnection
   get() = (this as CraftPlayer).handle.playerConnection
