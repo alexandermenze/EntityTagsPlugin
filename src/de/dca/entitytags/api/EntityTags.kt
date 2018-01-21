@@ -1,10 +1,10 @@
 package de.dca.entitytags.api
 
 import de.dca.entitytags.extensions.NetworkWrapper
+import de.dca.entitytags.extensions.PlayerConnection
 import de.dca.entitytags.util.EntityIdRepository
 import net.minecraft.server.v1_12_R1.DataWatcher
 import net.minecraft.server.v1_12_R1.PacketPlayOutEntityDestroy
-import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import java.util.*
@@ -35,6 +35,12 @@ class EntityTags {
             entityTagsMap.clear()
         }
 
+        fun remove(tagsEntity: LivingEntity) : EntityTags? {
+            val obj = entityTagsMap.remove(tagsEntity)
+            obj?.dispose()
+            return obj
+        }
+
         @JvmStatic
         fun of(entity: LivingEntity) : EntityTags
                 = entityTagsMap.computeIfAbsent(entity, ::EntityTags)
@@ -57,6 +63,9 @@ class EntityTags {
 
     val Size: Int
         get() = entityTags.size
+
+    private val Alive: Boolean
+        get() = !_entity.isDead
 
     private constructor(entity: LivingEntity){
         this._entity = entity
@@ -129,6 +138,40 @@ class EntityTags {
     }
 
     fun dispose(){
+        clear()
+        EntityTags.remove(this._entity)
+    }
 
+    fun clear() {
+        for ((entityTagObject, players) in this.entityTagPlayers) {
+            val entityId = getEntityTagId(entityTagObject) ?: continue
+
+            for (p in players) {
+                try {
+                    p.PlayerConnection.sendPacket(PacketPlayOutEntityDestroy(entityId))
+                } catch (ex: Exception) {
+                    ex.printStackTrace() // Ignore errors in dispose
+                }
+
+            }
+            try {
+                entityTagObject.onDetach(this)
+            } catch (ex: Exception) {
+                ex.printStackTrace() // Ignore errors in dispose
+            }
+
+            EntityIdRepository.free(entityId)
+        }
+        this.entityTags.clear()
+        this.entityTagPlayers.clear()
+        this.tmpPlayerMap.clear()
+    }
+
+    private fun getEntityTagId(tag: EntityTag) : Int? {
+        return entityTags[tag]
+    }
+
+    private fun calculateTagHeight(tagIndex: Int): Double {
+        return this._entity.eyeLocation.y + 0.475 + 0.275 * tagIndex
     }
 }
