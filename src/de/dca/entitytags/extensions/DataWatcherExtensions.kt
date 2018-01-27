@@ -47,12 +47,11 @@ private object DataWatcherHelper {
         val watcherObjects = source.c() ?: return clone
 
         val watcherItemMap = getItemMap(clone)
-        for (item in watcherObjects){
-            watcherItemMap[item.a().a()] = item
+        for (item in watcherObjects) {
+            watcherItemMap[item.a().a()] = item.d()
         }
         return clone
     }
-
 }
 
 fun DataWatcher.getEntity() : Entity {
@@ -61,4 +60,8 @@ fun DataWatcher.getEntity() : Entity {
 
 fun DataWatcher.deepClone() : DataWatcher {
     return DataWatcherHelper.cloneDataWatcher(this)
+}
+
+fun DataWatcher.getItems() : Map<Int, DataWatcher.Item<*>>{
+    return DataWatcherHelper.getItemMap(this)
 }
