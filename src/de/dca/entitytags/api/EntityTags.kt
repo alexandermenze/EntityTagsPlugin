@@ -1,10 +1,15 @@
 package de.dca.entitytags.api
 
-import de.dca.entitytags.extensions.NetworkWrapper
+import de.dca.entitytags.exceptions.InternalException
 import de.dca.entitytags.extensions.PlayerConnection
+import de.dca.entitytags.extensions.getItems
+import de.dca.entitytags.extensions.setValue
+import de.dca.entitytags.util.DataWatcherUtil
 import de.dca.entitytags.util.EntityIdRepository
 import net.minecraft.server.v1_12_R1.DataWatcher
+import net.minecraft.server.v1_12_R1.EntityArmorStand
 import net.minecraft.server.v1_12_R1.PacketPlayOutEntityDestroy
+import net.minecraft.server.v1_12_R1.PacketPlayOutEntityMetadata
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import java.util.*
@@ -15,6 +20,9 @@ class EntityTags {
 
         private val VIEW_DISTANCE = 30
         private val viewDistanceSquared = VIEW_DISTANCE * VIEW_DISTANCE
+
+        private val ENTITY_BYTE_ARMOR_STAND_MARKER: Byte = 0x10
+        private val ENTITY_BYTE_ENTITY_INVISIBLE: Byte = 0x20
 
         private val entityTagsMap : HashMap<LivingEntity, EntityTags> = HashMap()
 
@@ -64,7 +72,7 @@ class EntityTags {
     val Size: Int
         get() = entityTags.size
 
-    private val Alive: Boolean
+    private val EntityAlive: Boolean
         get() = !_entity.isDead
 
     private constructor(entity: LivingEntity){
@@ -115,7 +123,7 @@ class EntityTags {
             val players = entityTagPlayers.remove(tag) ?: return false
 
             for (p in players) {
-                p.NetworkWrapper.sendDestroyEntity(entityId)
+                p.PlayerConnection.sendPacket(PacketPlayOutEntityDestroy(entityId))
             }
 
             EntityIdRepository.free(entityId)
@@ -126,7 +134,16 @@ class EntityTags {
     }
 
     fun update(){
-
+        if(!EntityAlive){
+            this.dispose()
+            return
+        }
+        for(p in _entity.world.players){
+            checkPlayer(p)
+        }
+        for(tag in entityTagsMap.values) {
+            updateMetadata(tag)
+        }
     }
 
     fun update(tag: EntityTag){
@@ -134,6 +151,28 @@ class EntityTags {
     }
 
     fun updatePosition(){
+
+    }
+
+    fun updateMetadata(tag: EntityTag){
+        if(!EntityAlive){
+            this.dispose()
+            return
+        }
+        val tagPlayers = entityTagPlayers[tag] ?: return
+        for(p in tagPlayers){
+            updateMetadata(tag, p)
+        }
+    }
+
+    private fun updateMetadata(tag: EntityTag, p: Player) {
+        val entityId = getEntityTagId(tag) ?: throw InternalException("EntityTag has no EntityId!")
+        val dataWatcher = generateDataWatcher(tag, p)
+
+        p.PlayerConnection.sendPacket(PacketPlayOutEntityMetadata(entityId, dataWatcher, true))
+    }
+
+    private fun checkPlayer(player: Player) : Boolean {
 
     }
 
@@ -173,5 +212,21 @@ class EntityTags {
 
     private fun calculateTagHeight(tagIndex: Int): Double {
         return this._entity.eyeLocation.y + 0.475 + 0.275 * tagIndex
+    }
+
+    private fun generateDataWatcher(tag: EntityTag, player: Player) : DataWatcher {
+        val entityWatcher = DataWatcherUtil.getDataWatcher<EntityArmorStand>()
+        val itemMap = entityWatcher.getItems()
+
+        for ((index, item) in itemMap){
+            when(index){
+                11 -> (item as DataWatcher.Item<Byte>).setValue(ENTITY_BYTE_ARMOR_STAND_MARKER)
+                5 -> (item as DataWatcher.Item<Boolean>).setValue(true)
+                3 -> (item as DataWatcher.Item<Boolean>).setValue(true)
+                2 -> (item as DataWatcher.Item<String>).setValue(tag.doFormatText(player))
+                1 -> (item as DataWatcher.Item<Byte>).setValue(ENTITY_BYTE_ENTITY_INVISIBLE)
+            }
+        }
+        return entityWatcher
     }
 }
