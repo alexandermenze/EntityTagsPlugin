@@ -62,6 +62,6 @@ fun DataWatcher.deepClone() : DataWatcher {
     return DataWatcherHelper.cloneDataWatcher(this)
 }
 
-fun DataWatcher.getItems() : Map<Int, DataWatcher.Item<*>>{
+fun DataWatcher.getItems() : MutableMap<Int, DataWatcher.Item<*>>{
     return DataWatcherHelper.getItemMap(this)
 }
