@@ -1,17 +1,14 @@
 package de.dca.entitytags.api
 
 import de.dca.entitytags.exceptions.InternalException
-import de.dca.entitytags.extensions.PlayerConnection
-import de.dca.entitytags.extensions.getItems
-import de.dca.entitytags.extensions.setValue
+import de.dca.entitytags.extensions.*
 import de.dca.entitytags.util.DataWatcherUtil
 import de.dca.entitytags.util.EntityIdRepository
-import net.minecraft.server.v1_12_R1.DataWatcher
-import net.minecraft.server.v1_12_R1.EntityArmorStand
-import net.minecraft.server.v1_12_R1.PacketPlayOutEntityDestroy
-import net.minecraft.server.v1_12_R1.PacketPlayOutEntityMetadata
+import net.minecraft.server.v1_12_R1.*
+import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
+import org.bukkit.util.Vector
 import java.util.*
 
 class EntityTags {
@@ -27,15 +24,19 @@ class EntityTags {
         private val entityTagsMap : HashMap<LivingEntity, EntityTags> = HashMap()
 
         fun internalUpdateTag(tag: EntityTag) {
-
+            entityTagsMap.values
+                    .filter { it.entityTags.containsKey(tag) }
+                    .forEach { it.update(tag) }
         }
 
         fun internalPlayerLeft(p: Player){
-
+            entityTagsMap.values
+                    .forEach { it.removePlayerFromAllTags(p) }
         }
 
         fun internalPlayerUpdate(p: Player){
-
+            entityTagsMap.values
+                    .forEach { it.checkPlayer(p) }
         }
 
         fun globalDispose(){
@@ -64,10 +65,10 @@ class EntityTags {
         get() = _entity
 
     private var entityTags: LinkedHashMap<EntityTag, Int> = LinkedHashMap()
-    private val entityTagPlayers: LinkedHashMap<EntityTag, List<Player>> = LinkedHashMap()
+    private val entityTagPlayers: LinkedHashMap<EntityTag, MutableList<Player>> = LinkedHashMap()
 
     private val tmpPlayerMap: HashMap<Player, Int> = HashMap()
-    private val tmpDataWatcher: DataWatcher = DataWatcher(null)
+    private val tmpVector: Vector = Vector(0, 0, 0)
 
     val Size: Int
         get() = entityTags.size
@@ -141,17 +142,49 @@ class EntityTags {
         for(p in _entity.world.players){
             checkPlayer(p)
         }
-        for(tag in entityTagsMap.values) {
+        for(tag in entityTagPlayers.keys) {
             updateMetadata(tag)
         }
     }
 
     fun update(tag: EntityTag){
-
+        for (p in _entity.world.players) {
+            checkPlayer(p)
+        }
+        updateMetadata(tag)
     }
 
     fun updatePosition(){
+        if(!EntityAlive){
+            this.dispose()
+            return
+        }
+        tmpPlayerMap.clear()
 
+        for((tag, playerList) in entityTagPlayers){
+            val entityId = getEntityTagId(tag) ?: throw InternalException("EntityTag has no EntityId!")
+
+            for(player in playerList){
+                if(!tmpPlayerMap.containsKey(player))
+                    tmpPlayerMap[player] = 0
+
+                val tagIndex = tmpPlayerMap.put(player, tmpPlayerMap[player]!! + 1) ?: throw InternalException("HashMap error!")
+
+                tmpVector.x = _entity.location.x
+                tmpVector.y = calculateTagHeight(tagIndex)
+                tmpVector.z = _entity.location.z
+
+                val offset = tag.calculatePositionOffset(player, tmpVector)
+
+                val packet = PacketPlayOutEntityTeleport()
+                packet.setEntityId(entityId)
+                packet.setOnGround(false)
+                packet.setX(tmpVector.x + offset.x)
+                packet.setY(tmpVector.y + offset.y)
+                packet.setZ(tmpVector.z + offset.z)
+                player.PlayerConnection.sendPacket(packet)
+            }
+        }
     }
 
     fun updateMetadata(tag: EntityTag){
@@ -173,7 +206,34 @@ class EntityTags {
     }
 
     private fun checkPlayer(player: Player) : Boolean {
+        val inRange = player.world == _entity.world
+            && player.location.distanceSquared(_entity.location) <= viewDistanceSquared
 
+        var needPosUpdate = false
+
+        if(inRange){
+            for((tag, playerList) in entityTagPlayers){
+                if(tag.isVisibleTo(player)){
+                    if (!playerList.contains(player)){
+                        playerList.add(player)
+                        player.PlayerConnection.sendPacket(generateSpawnPacket(tag, player))
+                        needPosUpdate = true
+                    }
+                }else{
+                    if(playerList.remove(player)){
+                        val entityId = getEntityTagId(tag) ?: throw InternalException("EntityTag has no EntityId!")
+                        player.PlayerConnection.sendPacket(PacketPlayOutEntityDestroy(entityId))
+                    }
+                }
+            }
+        }else{
+            removePlayerFromAllTags(player)
+        }
+
+        if(needPosUpdate)
+            updatePosition()
+
+        return inRange
     }
 
     fun dispose(){
@@ -214,6 +274,14 @@ class EntityTags {
         return this._entity.eyeLocation.y + 0.475 + 0.275 * tagIndex
     }
 
+    private fun removePlayerFromAllTags(player: Player){
+        for ((tag, playerList) in entityTagPlayers) {
+            val entityId = getEntityTagId(tag) ?: throw InternalException("EntityTag has no EntityId")
+            playerList.remove(player)
+            player.PlayerConnection.sendPacket(PacketPlayOutEntityDestroy(entityId))
+        }
+    }
+
     private fun generateDataWatcher(tag: EntityTag, player: Player) : DataWatcher {
         val entityWatcher = DataWatcherUtil.getDataWatcher<EntityArmorStand>()
         val itemMap = entityWatcher.getItems()
@@ -228,5 +296,9 @@ class EntityTags {
             }
         }
         return entityWatcher
+    }
+
+    private fun generateSpawnPacket(tag: EntityTag, player: Player) : Packet<*> {
+
     }
 }
