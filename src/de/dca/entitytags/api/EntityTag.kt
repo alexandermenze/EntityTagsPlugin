@@ -31,7 +31,7 @@ abstract class EntityTag {
     open fun onAttach(tags: EntityTags){}
     open fun onDetach(tags: EntityTags){}
 
-    abstract fun isVisibleTo(player: Player)
+    abstract fun isVisibleTo(player: Player) : Boolean
     abstract fun doFormatText(player: Player) : String
 
     open fun calculatePositionOffset(player: Player, position: Vector) : Vector {
