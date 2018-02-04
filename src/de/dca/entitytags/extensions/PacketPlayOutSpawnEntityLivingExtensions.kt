@@ -70,6 +70,10 @@ fun PacketPlayOutSpawnEntityLiving.setEntityType(type: Class<out Entity>){
     PacketPlayOutSpawnEntityLivingHelper.setEntityType(this, type)
 }
 
+inline fun <reified T : Entity> PacketPlayOutSpawnEntityLiving.setEntityType(){
+    setEntityType(T::class.java)
+}
+
 fun PacketPlayOutSpawnEntityLiving.setPosition(x: Double, y: Double, z: Double){
     PacketPlayOutSpawnEntityLivingHelper.setPosition(this, x, y, z)
 }
