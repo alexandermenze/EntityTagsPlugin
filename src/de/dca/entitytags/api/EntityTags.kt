@@ -40,7 +40,7 @@ class EntityTags {
 
         fun globalDispose(){
             entityTagsMap.forEach{ _, v -> v.dispose() }
-            entityTagsMap.clear()
+            //entityTagsMap.clear()
         }
 
         fun remove(tagsEntity: LivingEntity) : EntityTags? {
@@ -154,7 +154,6 @@ class EntityTags {
     }
 
     fun updatePosition(){
-        System.out.println("Position update!")
         if(!EntityAlive){
             this.dispose()
             return
