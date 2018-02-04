@@ -9,6 +9,7 @@ import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import org.bukkit.util.Vector
 import java.util.*
+import kotlin.collections.HashMap
 
 class EntityTags {
 
@@ -39,10 +40,9 @@ class EntityTags {
         }
 
         fun globalDispose(){
-            for(( _, v ) in entityTagsMap){
-                v.dispose()
-            }
+            val copy = HashMap<LivingEntity, EntityTags>(entityTagsMap)
             entityTagsMap.clear()
+            copy.values.forEach{ it.dispose() }
         }
 
         fun remove(tagsEntity: LivingEntity) : EntityTags? {
