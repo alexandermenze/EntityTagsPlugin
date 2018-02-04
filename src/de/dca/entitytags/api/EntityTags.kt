@@ -20,8 +20,6 @@ class EntityTags {
         private val ENTITY_BYTE_ARMOR_STAND_MARKER: Byte = 0x10
         private val ENTITY_BYTE_ENTITY_INVISIBLE: Byte = 0x20
 
-        private val ARMOR_STAND_ENTITY_CLASS = EntityArmorStand::class.java
-
         private val entityTagsMap : HashMap<LivingEntity, EntityTags> = HashMap()
 
         fun internalUpdateTag(tag: EntityTag) {
