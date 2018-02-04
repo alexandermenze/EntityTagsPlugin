@@ -11,6 +11,11 @@ class PlayerBlockMoveEvent : PlayerEvent, Cancellable {
 
     companion object {
         private val handlers: HandlerList = HandlerList()
+
+        @JvmStatic
+        fun getHandlerList(): HandlerList {
+            return handlers
+        }
     }
 
     private val from: BlockLocation
@@ -41,11 +46,6 @@ class PlayerBlockMoveEvent : PlayerEvent, Cancellable {
     override fun getHandlers() : HandlerList {
         return Companion.handlers
     }
-
-    fun getHandlerList(): HandlerList {
-        return handlers
-    }
-
 
     class BlockLocation {
 
