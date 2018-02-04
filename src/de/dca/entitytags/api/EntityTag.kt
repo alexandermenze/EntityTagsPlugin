@@ -6,35 +6,21 @@ import org.bukkit.util.Vector
 abstract class EntityTag {
 
     companion object {
+        @JvmField
         val ZERO_OFFSET = Vector(0, 0, 0)
-    }
-
-    protected var tagText : String
-
-    constructor(text: String = ""){
-        this.tagText = text
     }
 
     fun update(){
         EntityTags.internalUpdateTag(this)
     }
 
-    open fun setText(text: String){
-        this.tagText = text
-        update()
-    }
-
-    open fun getText() : String {
-        return this.tagText
-    }
-
     open fun onAttach(tags: EntityTags){}
     open fun onDetach(tags: EntityTags){}
-
     open fun isVisibleTo(player: Player) : Boolean { return true }
-    open fun doFormatText(player: Player) : String { return getText() }
 
     open fun calculatePositionOffset(player: Player, position: Vector) : Vector {
         return ZERO_OFFSET
     }
+
+    abstract fun doFormatText(player: Player) : String
 }
