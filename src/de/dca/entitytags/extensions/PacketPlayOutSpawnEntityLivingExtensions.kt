@@ -2,6 +2,7 @@ package de.dca.entitytags.extensions
 
 import net.minecraft.server.v1_12_R1.DataWatcher
 import net.minecraft.server.v1_12_R1.Entity
+import net.minecraft.server.v1_12_R1.EntityTypes
 import net.minecraft.server.v1_12_R1.PacketPlayOutSpawnEntityLiving
 import java.lang.reflect.Field
 import java.util.*
@@ -26,27 +27,29 @@ object PacketPlayOutSpawnEntityLivingHelper {
     }
 
     fun setEntityId(packet: PacketPlayOutSpawnEntityLiving, id: Int){
-
+        fieldEntityId.set(packet, id)
     }
 
     fun setUniqueId(packet: PacketPlayOutSpawnEntityLiving, id: UUID){
-
+        fieldUniqueId.set(packet, id)
     }
 
     fun setEntityType(packet: PacketPlayOutSpawnEntityLiving, type: Int){
-
+        fieldEntityType.set(packet, type)
     }
 
     fun setEntityType(packet: PacketPlayOutSpawnEntityLiving, type: Class<out Entity>){
-
+        fieldEntityType.set(packet, EntityTypes.b.a(type))
     }
 
     fun setPosition(packet: PacketPlayOutSpawnEntityLiving, x: Double, y: Double, z: Double){
-
+        fieldPosX.set(packet, x)
+        fieldPosY.set(packet, y)
+        fieldPosZ.set(packet, z)
     }
 
     fun setDataWatcher(packet: PacketPlayOutSpawnEntityLiving, dataWatcher: DataWatcher){
-
+        fieldDataWatcher.set(packet, dataWatcher)
     }
 
 }
