@@ -155,7 +155,8 @@ class EntityTags {
         updateMetadata(tag)
     }
 
-    private fun updatePosition(){
+    fun updatePosition(){
+        System.out.println("Position update!")
         if(!EntityAlive){
             this.dispose()
             return

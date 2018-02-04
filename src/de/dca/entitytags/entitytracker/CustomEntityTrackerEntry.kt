@@ -1,5 +1,6 @@
 package de.dca.entitytags.entitytracker
 
+import de.dca.entitytags.api.EntityTags
 import de.dca.entitytags.util.ReflectionUtil
 import net.minecraft.server.v1_12_R1.*
 import org.bukkit.entity.LivingEntity
@@ -40,7 +41,9 @@ class CustomEntityTrackerEntry
             val entity = this.b() as? EntityLiving ?: return
             val bukkitEntity = entity.bukkitEntity as? LivingEntity ?: return
 
-            //Todo: Check entitytags
+            if(!EntityTags.has(bukkitEntity))
+                return
+            EntityTags.of(bukkitEntity).updatePosition()
         }
     }
 }
