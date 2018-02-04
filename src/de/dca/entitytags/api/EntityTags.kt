@@ -155,7 +155,7 @@ class EntityTags {
         updateMetadata(tag)
     }
 
-    fun updatePosition(){
+    private fun updatePosition(){
         if(!EntityAlive){
             this.dispose()
             return
@@ -188,7 +188,7 @@ class EntityTags {
         }
     }
 
-    fun updateMetadata(tag: EntityTag){
+    private fun updateMetadata(tag: EntityTag){
         if(!EntityAlive){
             this.dispose()
             return
@@ -297,7 +297,7 @@ class EntityTags {
                 5 -> (item as DataWatcher.Item<Boolean>).setValue(true)
                 3 -> (item as DataWatcher.Item<Boolean>).setValue(true)
                 2 -> (item as DataWatcher.Item<String>).setValue(tag.doFormatText(player))
-                1 -> (item as DataWatcher.Item<Byte>).setValue(ENTITY_BYTE_ENTITY_INVISIBLE)
+                0 -> (item as DataWatcher.Item<Byte>).setValue(ENTITY_BYTE_ENTITY_INVISIBLE)
             }
         }
         return entityWatcher
