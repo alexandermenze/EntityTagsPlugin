@@ -5,7 +5,6 @@ import de.dca.entitytags.extensions.*
 import de.dca.entitytags.util.DataWatcherUtil
 import de.dca.entitytags.util.EntityIdRepository
 import net.minecraft.server.v1_12_R1.*
-import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import org.bukkit.util.Vector
@@ -20,6 +19,8 @@ class EntityTags {
 
         private val ENTITY_BYTE_ARMOR_STAND_MARKER: Byte = 0x10
         private val ENTITY_BYTE_ENTITY_INVISIBLE: Byte = 0x20
+
+        private val ARMOR_STAND_ENTITY_CLASS = EntityArmorStand::class.java
 
         private val entityTagsMap : HashMap<LivingEntity, EntityTags> = HashMap()
 
@@ -162,7 +163,7 @@ class EntityTags {
         tmpPlayerMap.clear()
 
         for((tag, playerList) in entityTagPlayers){
-            val entityId = getEntityTagId(tag) ?: throw InternalException("EntityTag has no EntityId!")
+            val entityId = getEntityTagId(tag)
 
             for(player in playerList){
                 if(!tmpPlayerMap.containsKey(player))
@@ -199,7 +200,7 @@ class EntityTags {
     }
 
     private fun updateMetadata(tag: EntityTag, p: Player) {
-        val entityId = getEntityTagId(tag) ?: throw InternalException("EntityTag has no EntityId!")
+        val entityId = getEntityTagId(tag)
         val dataWatcher = generateDataWatcher(tag, p)
 
         p.PlayerConnection.sendPacket(PacketPlayOutEntityMetadata(entityId, dataWatcher, true))
@@ -221,7 +222,7 @@ class EntityTags {
                     }
                 }else{
                     if(playerList.remove(player)){
-                        val entityId = getEntityTagId(tag) ?: throw InternalException("EntityTag has no EntityId!")
+                        val entityId = getEntityTagId(tag)
                         player.PlayerConnection.sendPacket(PacketPlayOutEntityDestroy(entityId))
                     }
                 }
@@ -243,7 +244,7 @@ class EntityTags {
 
     fun clear() {
         for ((entityTagObject, players) in this.entityTagPlayers) {
-            val entityId = getEntityTagId(entityTagObject) ?: continue
+            val entityId = tryGetEntityTagId(entityTagObject) ?: continue
 
             for (p in players) {
                 try {
@@ -266,8 +267,12 @@ class EntityTags {
         this.tmpPlayerMap.clear()
     }
 
-    private fun getEntityTagId(tag: EntityTag) : Int? {
+    private fun tryGetEntityTagId(tag: EntityTag) : Int? {
         return entityTags[tag]
+    }
+
+    private fun getEntityTagId(tag: EntityTag) : Int {
+        return tryGetEntityTagId(tag) ?: throw InternalException("EntityTag has no EntityId")
     }
 
     private fun calculateTagHeight(tagIndex: Int): Double {
@@ -276,7 +281,7 @@ class EntityTags {
 
     private fun removePlayerFromAllTags(player: Player){
         for ((tag, playerList) in entityTagPlayers) {
-            val entityId = getEntityTagId(tag) ?: throw InternalException("EntityTag has no EntityId")
+            val entityId = getEntityTagId(tag)
             playerList.remove(player)
             player.PlayerConnection.sendPacket(PacketPlayOutEntityDestroy(entityId))
         }
@@ -299,6 +304,15 @@ class EntityTags {
     }
 
     private fun generateSpawnPacket(tag: EntityTag, player: Player) : Packet<*> {
+        val pos = Entity.location
 
+        val packet = PacketPlayOutSpawnEntityLiving()
+        packet.setEntityId(getEntityTagId(tag))
+        packet.setEntityType<EntityArmorStand>()
+        packet.setUniqueId(UUID.randomUUID())
+        packet.setPosition(pos.x, pos.y, pos.z)
+        packet.setDataWatcher(generateDataWatcher(tag, player))
+
+        return packet
     }
 }
