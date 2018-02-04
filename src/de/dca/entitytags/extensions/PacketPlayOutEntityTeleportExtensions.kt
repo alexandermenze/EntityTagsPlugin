@@ -5,22 +5,19 @@ import java.lang.reflect.Field
 
 object PacketPlayOutEntityTeleportHelper {
 
-    private val fieldEntityId: Field = getPrivateField("a")
-    private val fieldOnGround: Field = getPrivateField("g")
-    private val fieldPosX: Field = getPrivateField("b")
-    private val fieldPosY: Field = getPrivateField("c")
-    private val fieldPosZ: Field = getPrivateField("d")
-
-    init {
-        fieldEntityId.isAccessible = true
-        fieldOnGround.isAccessible = true
-        fieldPosX.isAccessible = true
-        fieldPosY.isAccessible = true
-        fieldPosZ.isAccessible = true
-    }
+    private val fieldEntityId: Field = makeAccessible(getPrivateField("a"))
+    private val fieldOnGround: Field = makeAccessible(getPrivateField("g"))
+    private val fieldPosX: Field = makeAccessible(getPrivateField("b"))
+    private val fieldPosY: Field = makeAccessible(getPrivateField("c"))
+    private val fieldPosZ: Field = makeAccessible(getPrivateField("d"))
 
     private fun getPrivateField(name: String) : Field {
         return PacketPlayOutEntityTeleport::class.java.getDeclaredField(name)
+    }
+
+    private fun makeAccessible(f: Field) : Field {
+        f.isAccessible = true
+        return f
     }
 
     fun setEntityId(packet: PacketPlayOutEntityTeleport, value: Int){
