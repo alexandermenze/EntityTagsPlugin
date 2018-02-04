@@ -39,8 +39,10 @@ class EntityTags {
         }
 
         fun globalDispose(){
-            entityTagsMap.forEach{ _, v -> v.dispose() }
-            //entityTagsMap.clear()
+            for(( _, v ) in entityTagsMap){
+                v.dispose()
+            }
+            entityTagsMap.clear()
         }
 
         fun remove(tagsEntity: LivingEntity) : EntityTags? {
